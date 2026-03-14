@@ -1,0 +1,19 @@
+# AI Assistant Configuration
+
+model:
+  name: "llama3-70b-8192"
+  temperature: 0.2
+  max_tokens: 1024
+
+embeddings:
+  model_name: "sentence-transformers/all-MiniLM-L6-v2"
+
+retrieval:
+  top_k: 5
+  chunk_size: 1000
+  chunk_overlap: 200
+
+paths:
+  data_dir: "data"
+  vectorstore_dir: "vectorstore"
+  log_file: "logs/app.log"

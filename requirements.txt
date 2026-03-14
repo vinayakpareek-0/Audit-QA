@@ -1,0 +1,8 @@
+groq
+chromadb
+langchain
+langchain-huggingface
+pypdf
+python-dotenv
+streamlit
+PyYAML

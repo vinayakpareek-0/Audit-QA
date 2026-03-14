@@ -8,6 +8,12 @@ model:
 embeddings:
   model_name: "sentence-transformers/all-MiniLM-L6-v2"
 
+data:
+  data_dir: "data"
+  pdf_path: "data/owlflow-web-text.pdf"
+  kb_path: "data/knowledge_base.json"
+  qa_path: "data/qa_pairs.json"
+
 retrieval:
   top_k: 5
   chunk_size: 1000

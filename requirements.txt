@@ -1,8 +1,9 @@
 groq
 chromadb
-langchain
-langchain-huggingface
-pypdf
+sentence-transformers
+rank_bm25
+flashrank
 python-dotenv
 streamlit
 PyYAML
+pypdf

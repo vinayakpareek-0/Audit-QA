@@ -24,3 +24,8 @@ paths:
   data_dir: "data"
   vectorstore_dir: "vectorstore"
   log_file: "logs/app.log"
+
+business:
+  name: "Owlflow"
+  owner: "Vinay"
+  contact_email: "vpj@example.com"

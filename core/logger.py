@@ -52,6 +52,36 @@ class AuditLogger:
         except Exception as e:
             print(f"[ERROR] Failed to log interaction to Supabase: {e}")
 
+    def log_lead(self, session_id: str, lead_data: dict):
+        """Inserts a lead in the 'leads' table if meaningful data exists."""
+        if not self.client:
+            return
+
+        # Check if we have at least SOME useful info
+        has_info = any([
+            lead_data.get("full_name"),
+            lead_data.get("email"),
+            lead_data.get("phone")
+        ])
+        
+        if not has_info:
+            print("[DEBUG] Lead extraction returned no personal info. Skipping log.")
+            return
+
+        data = {
+            "session_id": session_id,
+            "full_name": lead_data.get("full_name"),
+            "email": lead_data.get("email"),
+            "phone": lead_data.get("phone"),
+            "use_case": lead_data.get("use_case"),
+            "status": "New"
+        }
+        
+        try:
+            self.client.table("leads").insert(data).execute()
+        except Exception as e:
+            print(f"[ERROR] Failed to log lead to Supabase: {e}")
+
 if __name__ == "__main__":
     # Internal test
     logger = AuditLogger()

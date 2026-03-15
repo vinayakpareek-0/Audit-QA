@@ -137,7 +137,7 @@ def get_retriever():
 
 # --- APP LOGIC ---
 if "session_id" not in st.session_state:
-    st.session_state.session_id = "new-chat"
+    st.session_state.session_id = str(uuid.uuid4())
 
 # Load the heavy models once
 retriever = get_retriever()
@@ -151,8 +151,10 @@ if "messages" not in st.session_state:
 
 with st.sidebar:
     st.markdown("<h3 style='color:#444746; margin: 10px 0 30px 0; font-weight:500;'>Owlflow AI</h3>", unsafe_allow_html=True)
-    st.session_state.session_id = st.text_input("Session ID", value=st.session_state.session_id)
+    
+    # Session management is now hidden from the user but tracked in the backend
     if st.button("+ New Chat", use_container_width=True):
+        st.session_state.session_id = str(uuid.uuid4())
         st.session_state.messages = []
         st.rerun()
     st.markdown("<div style='position: fixed; bottom: 20px; font-size: 12px; color: #70757A;'>Powered by Groq Llama 3.3</div>", unsafe_allow_html=True)
@@ -178,11 +180,7 @@ for msg in st.session_state.messages:
 
 # User Input
 if prompt := st.chat_input("Enter a prompt here"):
-    # --- AUTO-NAMING LOGIC ---
-    if st.session_state.session_id == "new-chat":
-        words = prompt.split()[:4]
-        slug = "-".join([w.lower() for w in words if w.isalnum()])
-        st.session_state.session_id = f"{slug}-{int(time.time())}"
+    # (No auto-naming needed anymore as we use persistent hidden UUIDs)
 
     # UI Update for user message
     st.session_state.messages.append({"role": "user", "content": prompt})

@@ -15,6 +15,7 @@ data:
   qa_path: "data/qa_pairs.json"
 
 retrieval:
+  collection_name: "business_kb"
   top_k: 5
   chunk_size: 1000
   chunk_overlap: 200

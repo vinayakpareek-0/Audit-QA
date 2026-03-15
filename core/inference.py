@@ -1,5 +1,7 @@
 import os
 import sys
+import time
+from datetime import datetime
 from pathlib import Path
 from groq import Groq
 from dotenv import load_dotenv
@@ -18,9 +20,9 @@ load_dotenv()
 class InferenceEngine:
     """Orchestrates RAG: Hybrid Retrieval -> Memory -> Groq LLM Inference -> Logging."""
     
-    def __init__(self, session_id: str = "default-session"):
+    def __init__(self, session_id: str = "default-session", retriever: BusinessRetriever = None):
         self.config = load_config()
-        self.retriever = BusinessRetriever()
+        self.retriever = retriever if retriever else BusinessRetriever()
         self.memory = MemoryManager(session_id)
         self.logger = AuditLogger()
         self.session_id = session_id
@@ -50,11 +52,15 @@ class InferenceEngine:
         3. Keep the tone professional, helpful, and concise.
         """
 
-    def answer_question(self, query: str) -> str:
-        """Runs the full RAG pipeline with native message roles and logging."""
+    def answer_question(self, query: str) -> tuple[str, dict]:
+        """Runs the full RAG pipeline with native message roles and logging. Returns (answer, metrics)."""
+        metrics = {}
+        
         # 1. Get History & Retrieve Context
+        start_retrieval = time.time()
         history = self.memory.get_history()
         context = self.retriever.get_hybrid_context(query)
+        metrics['retrieval_time'] = time.time() - start_retrieval
         
         # 2. Build Messages (Native roles)
         messages = [{"role": "system", "content": self.get_system_prompt(context)}]
@@ -62,6 +68,7 @@ class InferenceEngine:
         messages.append({"role": "user", "content": query})
         
         # 3. Call Groq
+        start_inference = time.time()
         response = self.client.chat.completions.create(
             messages=messages,
             model=self.model,
@@ -70,13 +77,15 @@ class InferenceEngine:
         )
         
         answer = response.choices[0].message.content
+        metrics['inference_time'] = time.time() - start_inference
+        metrics['total_time'] = metrics['retrieval_time'] + metrics['inference_time']
         
         # 4. Persist State
         self.memory.add_message("user", query)
         self.memory.add_message("assistant", answer)
         self.logger.log_interaction(self.session_id, query, context, answer)
         
-        return answer
+        return answer, metrics
 
 if __name__ == "__main__":
     # Internal test

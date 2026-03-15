@@ -4,22 +4,26 @@ from pathlib import Path
 from groq import Groq
 from dotenv import load_dotenv
 
-# Add project root to sys.path
 root_path = Path(__file__).resolve().parent.parent
 if str(root_path) not in sys.path:
     sys.path.append(str(root_path))
 
 from core.load_config import load_config
 from core.retriever import BusinessRetriever
+from core.memory import MemoryManager
+from core.logger import AuditLogger
 
 load_dotenv()
 
 class InferenceEngine:
-    """Orchestrates RAG: Hybrid Retrieval -> Groq LLM Inference."""
+    """Orchestrates RAG: Hybrid Retrieval -> Memory -> Groq LLM Inference -> Logging."""
     
-    def __init__(self):
+    def __init__(self, session_id: str = "default-session"):
         self.config = load_config()
         self.retriever = BusinessRetriever()
+        self.memory = MemoryManager(session_id)
+        self.logger = AuditLogger()
+        self.session_id = session_id
         
         api_key = os.getenv("GROQ_API_KEY")
         if not api_key:
@@ -35,27 +39,27 @@ class InferenceEngine:
         return f"""
         You are a specialized AI assistant for a small business. 
         Your goal is to provide accurate answers based ONLY on the provided context.
+        Filter the provided context only based on asked query if context chunks are irrelevant to query.
 
-        CONTEXT:
+        CORE CONTEXT:
         {context}
 
         INSTRUCTIONS:
-        1. Answer based solely on the context above.
+        1. Answer based solely on the context provided.
         2. If the answer is not in the context, politely say you don't have that information.
         3. Keep the tone professional, helpful, and concise.
-        4. Do not mention the context or internal retrieval process in your answer.
         """
 
     def answer_question(self, query: str) -> str:
-        """Runs the full RAG pipeline to answer a query."""
-        # 1. Retrieve Context
+        """Runs the full RAG pipeline with native message roles and logging."""
+        # 1. Get History & Retrieve Context
+        history = self.memory.get_history()
         context = self.retriever.get_hybrid_context(query)
         
-        # 2. Build Messages
-        messages = [
-            {"role": "system", "content": self.get_system_prompt(context)},
-            {"role": "user", "content": query}
-        ]
+        # 2. Build Messages (Native roles)
+        messages = [{"role": "system", "content": self.get_system_prompt(context)}]
+        messages.extend(history)
+        messages.append({"role": "user", "content": query})
         
         # 3. Call Groq
         response = self.client.chat.completions.create(
@@ -65,7 +69,14 @@ class InferenceEngine:
             max_tokens=self.max_tokens
         )
         
-        return response.choices[0].message.content
+        answer = response.choices[0].message.content
+        
+        # 4. Persist State
+        self.memory.add_message("user", query)
+        self.memory.add_message("assistant", answer)
+        self.logger.log_interaction(self.session_id, query, context, answer)
+        
+        return answer
 
 if __name__ == "__main__":
     # Internal test

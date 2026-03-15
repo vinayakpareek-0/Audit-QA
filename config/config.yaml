@@ -1,7 +1,7 @@
 # AI Assistant Configuration
 
 model:
-  name: "llama3-70b-8192"
+  name: "llama-3.3-70b-versatile"
   temperature: 0.2
   max_tokens: 1024
 

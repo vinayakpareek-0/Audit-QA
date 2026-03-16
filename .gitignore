@@ -10,8 +10,8 @@ venv/
 
 # Project Specific
 vectorstore/
-# data/*.json
-# data/*.pdf
+data/*.json
+data/*.pdf
 !data/example_schema.json
 
 # IDE

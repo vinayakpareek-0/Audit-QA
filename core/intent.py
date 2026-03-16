@@ -1,3 +1,5 @@
+import os
+from groq import Groq
 from dotenv import load_dotenv
 from core.load_config import load_config
 
@@ -19,7 +21,24 @@ class IntentClassifier:
         """
         history_text = "\n".join([f"{m['role'].upper()}: {m['content']}" for m in history[-3:]])
         
-        prompt = f"""History: {history_text}\nQuery: {query}\nRules: LEAD_GEN if user shows interest/price/hiring/contact info. Else KNOWLEDGE. Output 1 word."""
+        prompt = f"""
+        Analyze the following chat interaction. 
+        Your goal is to decide if the user is showing "Buying Intent" or generic interest in the company's services.
+
+        RECENT HISTORY:
+        {history_text}
+
+        CURRENT QUERY:
+        "{query}"
+
+        CLASSIFICATION RULES:
+        1. If the user asks about price, hiring, contact details, procedure to join, or says "I'm interested", return "LEAD_GEN".
+        2. If the user provides personal info (name, email, phone) or asks "how do I start", return "LEAD_GEN".
+        3. If the user asks for a demo, scheduling, or meeting, return "LEAD_GEN".
+        4. Otherwise, return "KNOWLEDGE".
+
+        Return ONLY the word: KNOWLEDGE or LEAD_GEN.
+        """
         
         try:
             response = self.client.chat.completions.create(

@@ -11,8 +11,26 @@ if str(root_path) not in sys.path:
 from core.inference import InferenceEngine
 import time
 import uuid
+import subprocess
+
+# --- AUTO-INGEST CHECK ---
+# If vectorstore is missing on first run, trigger ingest.py
+def check_ingestion():
+    config = load_config()
+    db_path = Path(config['paths']['vectorstore_dir'])
+    if not db_path.exists() or not any(db_path.iterdir()):
+        st.info("🦉 Initializing Knowledge Base for the first time... Please wait.")
+        try:
+            subprocess.run(["python", "ingest.py"], check=True)
+            st.success("✅ Knowledge Base Ready!")
+            time.sleep(1)
+            st.rerun()
+        except Exception as e:
+            st.error(f"Failed to initialize Knowledge Base: {e}")
 
 load_dotenv()
+from core.load_config import load_config
+check_ingestion()
 
 st.set_page_config(
     page_title="Owlflow AI",

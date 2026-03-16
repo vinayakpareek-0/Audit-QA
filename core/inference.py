@@ -99,11 +99,14 @@ class InferenceEngine:
             print(f"[DEBUG] Background tasks started. Intent: {intent}")
             try:
                 self.logger.log_interaction(self.session_id, query, context, answer)
-                if intent == "LEAD_GEN":
-                    updated_history = self.memory.get_history()
-                    print(f"[DEBUG] Extracting lead from history (length: {len(updated_history)})")
-                    lead_data = self.extractor.extract(updated_history)
-                    print(f"[DEBUG] Extracted lead data: {lead_data}")
+                
+                # Extract leads regardless of "intent" classification to be safe
+                updated_history = self.memory.get_history()
+                print(f"[DEBUG] Extracting lead from history (length: {len(updated_history)})")
+                lead_data = self.extractor.extract(updated_history)
+                print(f"[DEBUG] Extracted lead data: {lead_data}")
+                
+                if lead_data:
                     self.logger.log_lead(self.session_id, lead_data)
                     print("[DEBUG] log_lead called.")
             except Exception as e:

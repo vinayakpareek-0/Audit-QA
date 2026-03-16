@@ -57,15 +57,16 @@ class AuditLogger:
         if not self.client:
             return
 
-        # Check if we have at least SOME useful info
+        # Check if we have at least SOME useful info (Contact info OR a Use Case)
         has_info = any([
             lead_data.get("full_name"),
             lead_data.get("email"),
-            lead_data.get("phone")
+            lead_data.get("phone"),
+            lead_data.get("use_case")
         ])
         
         if not has_info:
-            print("[DEBUG] Lead extraction returned no personal info. Skipping log.")
+            print("[DEBUG] Lead extraction returned no info. Skipping log.")
             return
 
         data = {

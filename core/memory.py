@@ -39,8 +39,8 @@ if __name__ == "__main__":
     mem = MemoryManager(test_id)
     
     print("Testing Memory write...")
-    mem.add_message("user", "Chai kitne ki hai bhaiya?")
-    mem.add_message("assistant", "15 ki hai 20 ki hogi ab")
+    mem.add_message("user", "coffee kitne ki hai bhaiya?")
+    mem.add_message("assistant", "12 ki hai  ki hogi ab")
     
     print("Testing Memory read...")
     history = mem.get_history()

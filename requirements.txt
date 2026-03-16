@@ -10,3 +10,4 @@ pypdf
 upstash-redis
 supabase
 numpy
+onnxruntime

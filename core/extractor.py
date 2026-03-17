@@ -22,16 +22,20 @@ class LeadExtractor:
         history_text = "\n".join([f"{m['role'].upper()}: {m['content']}" for m in history])
         
         prompt = f"""
-        Extract structured lead information from this conversation history.
-        The business is looking for Name, Email, Phone, and Use-case.
+        Analyze the full conversation history to identify a potential business partner.
+        Your goal is to extract a 'Lead Profile' for the Sales Team.
         
         HISTORY:
         {history_text}
 
+        EXTRACTION RULES:
+        1. "full_name": Extract the user's name if shared.
+        2. "email": Extract valid emails.
+        3. "phone": Extract phone numbers.
+        4. "use_case": This is the most important. Don't just extract a single word. Synthesize the user's problem, industry, and why they are interested in {self.config.get('business', {}).get('name', 'the business')}.
+
         RETURN A JSON OBJECT WITH THESE KEYS:
-        "full_name", "email", "phone", "use_case"
-        
-        If a field is mentioned anywhere in the history, extract it. If missing, use null.
+        "full_name", "email", "phone", "use_case" (all keys must be present).
         """
         
         try:

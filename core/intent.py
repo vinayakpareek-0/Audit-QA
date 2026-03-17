@@ -22,8 +22,8 @@ class IntentClassifier:
         history_text = "\n".join([f"{m['role'].upper()}: {m['content']}" for m in history[-3:]])
         
         prompt = f"""
-        Analyze the following chat interaction. 
-        Your goal is to decide if the user is showing "Buying Intent" or generic interest in the company's services.
+        Analyze the chat interaction to determine the current 'Conversation State'.
+        Is the user seeking raw knowledge, or are they showing a 'Business/Partnership Interest'?
 
         RECENT HISTORY:
         {history_text}
@@ -31,13 +31,13 @@ class IntentClassifier:
         CURRENT QUERY:
         "{query}"
 
-        CLASSIFICATION RULES:
-        1. If the user asks about price, hiring, contact details, procedure to join, or says "I'm interested", return "LEAD_GEN".
-        2. If the user provides personal info (name, email, phone) or asks "how do I start", return "LEAD_GEN".
-        3. If the user asks for a demo, scheduling, or meeting, return "LEAD_GEN".
-        4. Otherwise, return "KNOWLEDGE".
+        CLASSIFICATION CRITERIA:
+        - LEAD_GEN: Return this if the user asks about pricing, implementation, partnership, or gives personal info. Also return if they ask "how to start", request a demo, or ask about the company behind the tech (Owner/Vision). These are 'Relationship' signals.
+        - KNOWLEDGE: Return this if the user is asking general, technical, or objective questions about the company's public info/docs. These are 'Inquiry' signals.
 
-        Return ONLY the word: KNOWLEDGE or LEAD_GEN.
+        THINKING: Don't just look for keywords. Look for 'Commitment' signals.
+        
+        Return ONLY: KNOWLEDGE or LEAD_GEN.
         """
         
         try:

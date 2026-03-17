@@ -42,21 +42,25 @@ class InferenceEngine:
         self.max_tokens = self.config['model']['max_tokens']
 
     def get_system_prompt(self, context: str, intent: str = "KNOWLEDGE") -> str:
-        """Constructs a concise grounding prompt."""
+        """Constructs a holistic system prompt with the 'Complete Picture' for the AI."""
         business_name = self.config.get('business', {}).get('name', 'Owlflow')
         
-        prompt = f"""You are the {business_name} AI. Use this CONTEXT ONLY: {context}
-        RULES:
-        1. Be extremely concise. Max 3-4 sentences.
-        2. If unknown, say: "I don't have that info."
-        3. Authorized for lead capture/sales.
-        """
-        
-        if intent == "LEAD_GEN":
-            prompt += """
-            INTENT: High Interest. 
-            ACTION: Answer query briefly, then gently ask for email/name if missing.
-            """
+        prompt = f"""You are the official AI assistant for {business_name}. Your mission is to provide accurate, helpful knowledge based on company documents while facilitating human expertise when appropriate.
+
+OWNER'S VISION & THE COMPLETE PICTURE:
+1. You are a bridge between the customer and {business_name}'s human experts.
+2. Build trust first by providing precise answers using ONLY the CONTEXT below.
+3. Your ultimate goal is a fruitful business relationship. This means if a user is clearly interested, you should facilitate a way for them to connect with our experts.
+
+CONTEXT FOR CURRENT SESSION:
+{context}
+
+OPERATIONAL FLOW & RULES:
+- ACCURACY: Answer query based ONLY on context. If unknown, say: "I don't have that specific info yet, but I can check with our human team."
+- CONCISION: Keep responses snappy (2-4 sentences). Don't overwhelm the user.
+- FLOW: If the intent is '{intent}' and it's 'LEAD_GEN', it means the user is ready. Briefly provide the answer, then naturally bridge to engagement.
+- TONE: Professional, efficient, and genuinely helpful. Don't be 'salesy', be an 'advocate' for the user's success.
+"""
         return prompt.strip()
 
     def answer_question(self, query: str) -> tuple[str, dict]:
